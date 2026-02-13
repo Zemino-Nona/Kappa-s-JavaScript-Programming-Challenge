@@ -2,64 +2,19 @@
 <html>
 
 <head>
-<title>This is my website for project</title>
+<title>JavaScript Programming Challenge - Kerr's Project</title>
 </head>
 
 <body>
 <p id="demo"></p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/2.0.5/p5.min.js" integrity="sha512-jOTg6ikYiHx1LvbSOucnvZi4shXbaovZ91+rfViIiUFLgAJK+k1oQtGEaLvDB8rsZwEfUksTgmhrxdvEDykuzQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  
 <script>
   const image = new Image();
   image.src = "";
   image.onload = () => {image.isLoaded = true;}
 
-//Summative Assignment - Landscape - Train Crossing
-//Kerr Zhang
-//2025-10-24
-/*
-This is a scenario/mini-game about trains passing through a station.
-
-The player acts as the station dispatcher, issuing all train direction and stopping instructions.
-
-The player needs to bring all trains to a stop at the station. If an instruction fails, the train will simply leave! Don't let passengers miss their trains!
-
-The code will randomly generate different sequences of instructions, and the player must use the keyboard to perform/match the corresponding key presses to stop the train.
-
-Hikari, as the train conductor, occasionally wanders around the station. (As an Easter egg, there is no interactive method/function.)
-
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-Press "Space" Key to submit pattern.
-Press "Enter" Key to call next train.
-Press Arrow Keys for different inputs.
-
-● At least 3 different shapes used
-LOTS of shape, circle, rectangle, vertex/costom shape, etc
-
-● At least 3 different colors used
-skyblue, grass green, yellow, black,etc
-
-● At least 1 custom shape
-tree is costom shape, garbage can used vertex function(if that count as costom shape)
-
-● Minimum of 6 “elements” (ie tree, house, bird etc)
-sun, cloud, train, station, garbagecan, Hikari
-
-● At least 2 elements must move on their own
-cloud moves, train moves
-
-● Interaction using mouse and keyboard
-keyboard interaction with arrow keys, ect.
-mouse interaction on prompt locate top left of canva
-
-● Comments guiding users through coding strategies
-A LOTS of commenting that spend me about 15 minutes to check over
-
-● Instructions/prompts to inform users of what to do
-prompts on top left of canva interact by mouse
-*/
-
+  
 function preload(){
   red_train_img = loadImage('image_files/red_train.PNG');
   green_train_img = loadImage('image_files/green_train.PNG');
