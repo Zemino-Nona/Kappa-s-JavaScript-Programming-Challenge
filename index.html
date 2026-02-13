@@ -11,29 +11,422 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/2.0.5/p5.min.js" integrity="sha512-jOTg6ikYiHx1LvbSOucnvZi4shXbaovZ91+rfViIiUFLgAJK+k1oQtGEaLvDB8rsZwEfUksTgmhrxdvEDykuzQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   
 <script>
-  
-  let name = [8, 9, 0];
-
-
-  let object = {
-    name: "name here,
-
-    method: function() {
-
-  }
-  };
-  
   const image = new Image();
   image.src = "";
-  image.onload = () => {
-    image.isLoaded = true;
+  image.onload = () => {image.isLoaded = true;}
+
+//Summative Assignment - Landscape - Train Crossing
+//Kerr Zhang
+//2025-10-24
+/*
+This is a scenario/mini-game about trains passing through a station.
+
+The player acts as the station dispatcher, issuing all train direction and stopping instructions.
+
+The player needs to bring all trains to a stop at the station. If an instruction fails, the train will simply leave! Don't let passengers miss their trains!
+
+The code will randomly generate different sequences of instructions, and the player must use the keyboard to perform/match the corresponding key presses to stop the train.
+
+Hikari, as the train conductor, occasionally wanders around the station. (As an Easter egg, there is no interactive method/function.)
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Press "Space" Key to submit pattern.
+Press "Enter" Key to call next train.
+Press Arrow Keys for different inputs.
+
+● At least 3 different shapes used
+LOTS of shape, circle, rectangle, vertex/costom shape, etc
+
+● At least 3 different colors used
+skyblue, grass green, yellow, black,etc
+
+● At least 1 custom shape
+tree is costom shape, garbage can used vertex function(if that count as costom shape)
+
+● Minimum of 6 “elements” (ie tree, house, bird etc)
+sun, cloud, train, station, garbagecan, Hikari
+
+● At least 2 elements must move on their own
+cloud moves, train moves
+
+● Interaction using mouse and keyboard
+keyboard interaction with arrow keys, ect.
+mouse interaction on prompt locate top left of canva
+
+● Comments guiding users through coding strategies
+A LOTS of commenting that spend me about 15 minutes to check over
+
+● Instructions/prompts to inform users of what to do
+prompts on top left of canva interact by mouse
+*/
+
+function preload(){
+  red_train_img = loadImage('image_files/red_train.PNG');
+  green_train_img = loadImage('image_files/green_train.PNG');
+  blue_train_img = loadImage('image_files/blue_train.PNG');
+  station_img = loadImage('image_files/station.PNG');
+  back_station_img = loadImage('image_files/back_station.PNG');
+  rail_img = loadImage('image_files/rail.png');
+  Hikari_img = loadImage('image_files/Hikari.png')
+}
+
+//===================SET UP VARIABLE==============================
+function setup() {
+  createCanvas(960,540);
+  next_train = false;//train is coming or not
+  train_stoped = false;// if train is stoped or not
+  key_typed_in = 0;//to storge number of user's key typed down 
+  userinput = [false,false,false,false]; // ↑ ↓ ← → for user input
+  target_input = [false,false,false,false];// ↑ ↓ ← → for ramdom target
+  train_pos = [-1000,50];// train position of x, y
+  train_color = 0;//train color, 1 to 3 are mean different color of train
+  train_speed = 20;//speed of train
+  stop_pos = -50//train stop position
+  message = "";//show user if they failed or not by text message
+  start_frame = 0;// to storge the frame for time function
+  stop_frame = 0;// used for time function
+  failed = false;// if player is failed on commands
+  result_shape = "";//determin what shape will player see on the pannel
+  cloudX = -100;//cloud X position
+  time = 0// a variable for time function
+  countdown = 0// contdown for timer
+  lever = false// if lever, or if space is pressed
+  suprice = 0// when Hikari will showed up
+  imgX = width + 100// Hikari image X position
+  clue_pos = [20,20]// the position of clue 
+  show_clue = false// show clue or not
+  noStroke();
+}
+//==================================================================
+
+function draw() {
+  background(135,206,235);//blue sky
+  fill(150, 193, 183); //grass color
+  rect(0,340,width,height);//grass 
+  //tree
+  fill(34,139,34);
+  circle(285,240,40);
+  circle(265,250,35);
+  circle(305,250,35);
+  fill(139,69,19);
+  beginShape();
+  vertex(275,350);
+  vertex(295,350);
+  vertex(288,255);
+  vertex(282,255);
+  endShape();
+  fill(255,223,25);
+  
+  //sun 
+  for (let r = random(180,200); r > 100; r -= 25) {//change in random for sun's glow ring
+  fill(255, 223, 25, map(r, 200, 100, 10, 80)); // fading glow
+  circle(920, 10, r);//draw the rings
+  }
+
+  // actual sun
+  fill(255, 223, 25);
+  circle(920, 10, 100);
+  
+  //cloud
+  fill(255);
+  noStroke();
+  ellipse(cloudX,30,60,40); 
+  ellipse(cloudX-30,30,40,30); 
+  ellipse(cloudX+30,30,40,30); 
+  ellipse(cloudX-10,20,50,30); 
+  cloudX += 3;//move to right
+  if (cloudX > 960 + 50) {//if cloud moves out of screen, it will reset back to left screen
+    cloudX = -100;
+  }
+
+  if (suprice == 3 || suprice == 4){// 20% will persent image of Hikari
+      imgX -= 8// image will move to left
+      image(Hikari_img,imgX,225)//show Hikari
+      if (imgX < 0){//if out of screen, reset img position back to left
+        imgX = width - 100
+        suprice = 0//and set random variable to original for next random
+      }
+    } 
+  
+  image(back_station_img,0,0,width,height);//draw backstation image made by Yukie
+  
+   //===================TRAIN =======================================
+  if (next_train == true){// if enter is pressed, or next train is coming
+    let time = round((frameCount - start_frame) / 60);//set up timer for train
+    if (train_stoped == true){//if train stoped, which the pattern is correct, show train that stoped on stop position
+      if (train_pos[0] < stop_pos){//train will goes right
+        train_pos[0] += train_speed;
+        if (train_pos[0] > stop_pos){//until it reaches to stop position
+          train_pos[0] = stop_pos;
+        }
+      }
+       
+      let train_wait_time = round((frameCount - stop_frame) / 60);//set waiting time of train to 2 sec
+      if (train_wait_time >= 2){//after 2 second, train will goes right
+        train_pos[0] += train_speed;
+      }
+      
+      if (train_color == 1){// show train in different color by train color variable
+        image(red_train_img, train_pos[0],train_pos[1]);// if color is 1, red train
+      } else if (train_color == 2){
+        image(blue_train_img, train_pos[0],train_pos[1]);// if color is 2, blue train
+      } else {
+        image(green_train_img, train_pos[0],train_pos[1]);// if color is 3, green train
+      }
+      
+      if (train_wait_time < 2){//setup for messages
+        textSize(40);
+        fill(0,200,0);
+      }
+      
+      if (train_pos[0] >= width){// if train is out of screen
+        next_train = false;// allow user to press enter to call another train
+        train_pos[0] = -1000;// set train position back to left
+        message = "";// show message
+      }
+      
+    } else {
+      if (time >= 6 || failed == true){//if user failed pattern or time is out
+        if (train_color == 1){// show train
+          image(red_train_img, train_pos[0],train_pos[1]);
+        } else if (train_color == 2){
+          image(blue_train_img, train_pos[0],train_pos[1]);
+        } else {
+          image(green_train_img, train_pos[0],train_pos[1]);
+        }
+        
+        train_pos[0] += train_speed;//that is going without stop
+        
+        if (train_pos[0] >= width){// reset train after out of screen
+          next_train = false;
+          train_pos[0] = -1000;
+          message = "Missed train!";//show failed message
+          userinput = [false,false,false,false];//reset input variable
+        }
+      }
+      
+      if (time >= 6 && result_shape == ""){// set shape on pannel to red square
+        result_shape = "red_square";
+      }
+      
+    }
+  }
+
+  //===================STATION FRONT============================
+  image(station_img,0,18,width,height);// show station image by Yukie
+  image(rail_img,0,520);// show railroad by me
+
+  //garbage can
+  fill(80);
+  ellipse(585,340,50,20);
+  fill(100);
+  rect(560,340,50,70);
+  fill(209,185,132);
+  rect(560,350,50,10);
+  rect(560,390,50,10);
+  fill(100,210,100);
+  beginShape();
+  vertex(585,360);
+  vertex(575,375);
+  vertex(595,375);
+  endShape();
+  
+  //pannel
+  fill(190);
+  rect(25,230,100,150);
+  fill(220);
+  rect(30,235,90,65);//display if next train is coming, and if it pass or not.
+  rect(30,310,90,65);//display time of when train will pass
+  
+  
+  if (result_shape == "red_square"){// if shape is red_square
+    fill(255,0,0);
+    rect(40,245,70,45);// show shape
+  } else if (result_shape == "green_triangle"){// if shape is green_triangle
+    fill(0,255,0);
+    triangle(40,290,75,245,110,290);// show shape
   }
   
-function setup() {
-  createCanvas(400, 400);
+  //lever
+  if (lever){// if space is pressed
+    fill(200);
+    rect(135,255,15,60);
+    fill(100);
+    rect(138,265,5,25);
+    fill(0);
+    rect(138,280,10,10);// show pressed lever
+  }else{
+    fill(200);
+    rect(135,255,15,60);
+    fill(100);
+    rect(138,265,5,25);
+    fill(0);
+    rect(138,265,10,10);// show normal lever
+  }
+  
+  //countdown
+textSize(40);
+if (!train_stoped && !failed && next_train){// if train is incoming
+  countdown = 5.5 - ( frameCount - start_frame) / 60; // timer in 5.5 seconds
+  if (countdown < 0) {// if time is out
+    countdown = 0// timer back to zero
+  }
+  
+  text(round(countdown,1),50,360);//round the second in 1 decimal
+} else {
+  text("",55,355);//else show no timer
 }
-function draw() {
-  background(255, 0, 0);
+  
+  //=================== TEXT / UI ===============================
+  textSize(20);
+if (show_clue){// if show clue, show:
+  fill(255,255,255,200);
+  rect(210,165,600,300);
+  fill(0);
+  text("- Press ENTER for next train", 230, 190);
+  text("- Press ↑↓←→, and SPACE key to submit command", 230, 210,550);
+  text("- The panel on the left will display whether it's correct or incorrect. You have a few seconds to enter your command.",230,240,550);
+  text("- No goal for this game, only for fun!",230,290,550);
+  text("- P.s: There might be someone who will show up when the train is coming...",230,350,550);// all of those
+}
+  
+  fill(255,0,0);//show regular message
+  text(message, 230, 170);
+
+  //show user pattern (white)
+  fill(255);
+  textSize(40);
+  if (userinput[0]) text("↑",360,120);
+  if (userinput[1]) text("↓",380,120);
+  if (userinput[2]) text("←",420,120);
+  if (userinput[3]) text("→",450,120);
+
+  //show target pattern (red)
+  fill(255,0,0);
+  if (target_input[0]) text("↑",690,120);
+  if (target_input[1]) text("↓",730,120);
+  if (target_input[2]) text("←",770,120);
+  if (target_input[3]) text("→",820,120);
+  
+  //show timer
+  fill(0);
+
+  //debug
+  if (key == 'c'){
+    fill(255);
+    text(mouseX+" : "+mouseY, mouseX,mouseY);
+    suprice = 4
+  } else {
+    text("", mouseX,mouseY);
+  }
+  
+  //show clue if mouse is pressed with in clue circle
+  textSize(15)
+  let d = dist(clue_pos[0],clue_pos[1],mouseX,mouseY)// if inside circle
+  if (d <= 15 && mouseIsPressed){
+    show_clue = true
+  }else if (d <= 15){
+    text("Click me for clues!", mouseX,mouseY)//show prompt
+  }else{
+    show_clue = false
+  }
+  fill(255,255,255);//draw out prompt circle
+  circle(clue_pos[0],clue_pos[1],15)
+  fill(0);
+  text("?",clue_pos[0]-4,clue_pos[1]+6)
+  
+}
+
+
+//==================================================================
+
+//==================KEYBOARD FUNCTION====================================
+function keyPressed(){
+  print(key_typed_in)
+  //==================START NEXT TRAIN=======================
+  if (keyCode === ENTER && next_train == false){// if key enter is pressed, ready for train incoming
+    imgX = width - 100
+    userinput = [false,false,false,false];//reset user's previous inputs
+    train_pos[0] = -1000;//reset train image position
+    next_train = true;//initialize variables agian(?)
+    train_stoped = false;
+    failed = false;
+    result_shape = "";
+    message = "";
+    print(message)//debug
+    train_color = int(random(1,4));//random train colors
+    for (let ri = 0; ri < 4; ri += 1){// random targets input
+      target_input[ri] = random([true,false]);
+    }
+    
+    stop_pos = -50;//set for train stop position
+    start_frame = frameCount;// storge frame for time function
+  }
+  //==================ARROW KEYS==================
+  if (next_train == true && train_stoped == false && failed == false){// when train is incoming
+    
+    let time = round((frameCount - start_frame)/60);//set up timer
+    if (time < 6){//with in 6 seconds
+      //user can input arrows as input
+      if (keyCode == UP_ARROW){// if up
+        userinput[0] = true;
+        key_typed_in += 1;
+      }
+      if (keyCode == DOWN_ARROW){// down
+        userinput[1] = true;
+        key_typed_in += 1;
+      }
+      if (keyCode == LEFT_ARROW){//left
+        userinput[2] = true;
+        key_typed_in += 1;
+      }
+      if (keyCode == RIGHT_ARROW){//right
+        userinput[3] = true;
+        key_typed_in += 1;
+      }
+      if (keyCode == '32'){//if space
+        key_typed_in += 5// submit commands
+        lever = true//show lever image is pulled
+      }
+
+      //when player finishes pressing 4 keys, check pattern
+      if (key_typed_in > 4){
+        key_typed_in = 0;//reset the key being pressed back to 0 for next
+        if (checkPattern()){//if retuen true, which that maches the targets
+          train_stoped = true;
+          message = "CORRECT DIRECTION!";//message to congrats 
+          result_shape = "green_triangle";//show triangle
+          stop_frame = frameCount;//set up time function
+          
+        } else {// when user failed, or pattern is not matching 
+          failed = true;
+          message = "WRONG DIRECTION!";//message 
+          result_shape = "red_square";// red_square
+        }
+        userinput = [false,false,false,false];//set user input back to normal
+      }
+    }
+  }
+}
+//==================COMPARE FUNCTION==================
+function checkPattern(){
+  for (let check_index = 0; check_index < 4; check_index++){//goes 1 by 1 in the list
+    if (userinput[check_index] != target_input[check_index]){// if user input is true for target input
+      return false;// if does not matching, return false
+    }
+  }
+  return true;//else it must be matching
+}
+
+function keyReleased(){// when key is released
+  if (keyCode == '32'){//if it was space key
+    lever = false// show lever is been back to normal
+  }
+  
+  if (keyCode == ENTER){// if it is entering
+    suprice = int(random(1,10))// random the chance for suprice in 10 numbers
+    print("If chance is 4... = " + suprice)// debug
+  }
 }
 </script>
 
