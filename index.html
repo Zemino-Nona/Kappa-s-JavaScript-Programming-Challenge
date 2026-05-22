@@ -41,18 +41,18 @@
         // ==========================================
         // P5.js COMPATIBILITY LAYER 
         // ==========================================
-        let canvas, ctx;
-        let width, height;
-        let mouseX = 0, mouseY = 0;
-        let mouseIsPressed = false;
-        let keyCode = 0;
-        let keyIsPressed = false;
-        let key = '';
-        const ENTER = 13;
-        const SHIFT = 16;
-        const CENTER = 'center'; // Fix 1: Defined CENTER constant
+        var canvas, ctx;
+        var width, height;
+        var mouseX = 0, mouseY = 0;
+        var mouseIsPressed = false;
+        var keyCode = 0;
+        var keyIsPressed = false;
+        var key = '';
+        var ENTER = 13;
+        var SHIFT = 16;
+        var CENTER = 'center'; 
 
-        let isStroke = true; // Fix 2: Explicit stroke tracking flag
+        var isStroke = true; 
 
         function init() {
             canvas = document.getElementById('canvas');
@@ -60,9 +60,10 @@
             width = canvas.width;
             height = canvas.height;
             
-
-            if (typeof setup === "function") setup();
-            
+            // 如果主游戏里写了 setup 函数，就调用它
+            if (window.setup) { 
+                setup(); 
+            }
             startLoop();
         }
 
@@ -72,25 +73,39 @@
             width = w;
             height = h;
         }
+
         function resizeCanvas(w, h) {
             createCanvas(w, h);
         }
-        function fill(r, g, b, a = 255) {
+        /**
+         * 
+         * @param {type} r 
+         * @param {type} g
+         * @param {type} b
+         * @param {type} a
+         * @returns {undefined}
+         */
+        function fill(r, g, b, a) {
+            // 最原始的默认值处理方式
+            if (a === undefined) { 
+                a = 255; 
+            }
+            
             if (typeof r === "string") {
                 ctx.fillStyle = r;
             } else if (g === undefined) { 
-                ctx.fillStyle = `rgb(${r},${r},${r})`;
+                ctx.fillStyle = "rgb(" + r + "," + r + "," + r + ")";
             } else if (b === undefined) {
-                ctx.fillStyle = `rgba(${r},${r},${r},${g/255})`;
+                ctx.fillStyle = "rgba(" + r + "," + r + "," + r + "," + (g / 255) + ")";
             } else {
-                ctx.fillStyle = `rgba(${r},${g},${b},${a/255})`;
+                ctx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + (a / 255) + ")";
             }
         }
 
         function stroke(c) {
             isStroke = true;
             if (typeof c === "number") {
-                ctx.strokeStyle = `rgb(${c},${c},${c})`;
+                ctx.strokeStyle = "rgb(" + c + "," + c + "," + c + ")";
             } else {
                 ctx.strokeStyle = c;
             }
@@ -108,23 +123,25 @@
 
         function rect(x, y, w, h) {
             ctx.fillRect(x, y, w, h);
-            if (isStroke) ctx.strokeRect(x, y, w, h);
+            if (isStroke === true) {
+                ctx.strokeRect(x, y, w, h);
+            }
         }
 
         function circle(x, y, d) {
             ctx.beginPath();
             ctx.arc(x, y, d / 2, 0, Math.PI * 2);
             ctx.fill();
-            if (isStroke) ctx.stroke();
+            if (isStroke === true) {
+                ctx.stroke();
+            }
         }
 
         function textSize(size) {
-            ctx.font = `${size}px Arial`;
+            ctx.font = size + "px Arial";
         }
 
-        
         function textAlign(align) {
-            // Fix 3: Safely handle numeric fallback positions (like width/2)
             if (typeof align === "string") {
                 ctx.textAlign = align.toLowerCase();
             } else {
@@ -132,48 +149,60 @@
             }
         }
 
-        
         function text(str, x, y) {
-            let lines = String(str).split('\n');
-            let fontHeight = parseInt(ctx.font, 10);
-            let lineHeight = isNaN(fontHeight) ? 16 : fontHeight * 1.2;
-            for (let i = 0; i < lines.length; i++) {
+            var textString = String(str);
+            var lines = textString.split('\n');
+            
+            var fontHeight = parseInt(ctx.font, 10);
+            var lineHeight = 16; 
+            
+            if (isNaN(fontHeight) === false) {
+                lineHeight = fontHeight * 1.2;
+            }
+            
+            for (var i = 0; i < lines.length; i++) {
                 ctx.fillText(lines[i], x, y + (i * lineHeight));
             }
         }
 
+        // ===== 输入处理 (老派的 function 格式) =====
         
-        // ===== INPUT HANDLING =====
-        window.addEventListener("DOMContentLoaded", () => {
+        window.addEventListener("DOMContentLoaded", function() {
             canvas = document.getElementById("canvas");
     
-            canvas.addEventListener("mousemove", e => {
-                const rect = canvas.getBoundingClientRect();
-                mouseX = e.clientX - rect.left;
-                mouseY = e.clientY - rect.top;
-        });
+            canvas.addEventListener("mousemove", function(e) {
+                var rectInfo = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rectInfo.left;
+                mouseY = e.clientY - rectInfo.top;
+            });
 
-            canvas.addEventListener("mousedown", () => { 
+            canvas.addEventListener("mousedown", function() { 
                 mouseIsPressed = true; 
             });
     
-            canvas.addEventListener("mouseup", () => { 
+            canvas.addEventListener("mouseup", function() { 
                 mouseIsPressed = false; 
-                if (typeof mouseReleased === "function") mouseReleased(); // 触发你的鼠标松开函数
+                if (window.mouseReleased) { 
+                    mouseReleased(); 
+                }
             });
     
-            window.addEventListener("keydown", e => { 
+            window.addEventListener("keydown", function(e) { 
                 keyCode = e.keyCode; 
                 key = e.key;
                 keyIsPressed = true;
-                if (typeof keyPressed === "function") keyPressed(); // 触发你的按键按下函数
+                if (window.keyPressed) { 
+                    keyPressed(); 
+                }
             });
     
-            window.addEventListener("keyup", () => { 
+            window.addEventListener("keyup", function() { 
                 keyCode = 0; 
                 key = '';
                 keyIsPressed = false;
-                if (typeof keyReleased === "function") keyReleased(); // 触发你的按键松开函数
+                if (window.keyReleased) { 
+                    keyReleased(); 
+                }
             });
         });
 
@@ -286,7 +315,7 @@ function startTitle() {
   fill(255, 255, 255);
   textAlign(width/2);
   text("Start the game by pressing 'Enter'", width / 2, height / 3);
-  text("Select your inital setup:", width / 2, height / 2 - 50);
+  text("Select your inital setup by [up][down], and [space]:", width / 2, height / 2 - 50);
   fill(255, 0, 0);
   if (initIndex === 1) {
     rect(width / 8 - 10, height / 2 + 40, 70, 70); 
@@ -432,7 +461,7 @@ function draw() {
   } else {
     mainGame();
   }
-  debug(); 
+  //debug(); 
 }
 
 function keyPressed() {
