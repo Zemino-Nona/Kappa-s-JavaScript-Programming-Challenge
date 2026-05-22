@@ -1,25 +1,452 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-<title>JavaScript Programming Challenge - Kerr's Project</title>
+    <title>Simple Chess Game</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 1px solid white;
+            display: block;
+            margin: 20px auto;
+            background-color: #222;
+        }
+        p {
+            text-align:center;
+            font-family:'Arial';
+            font-size: small;
+            font-style: oblique;
+            font-weight: bold;
+        }
+        h1{
+            text-align:center;
+            font-family:'Arial';
+            font-size: larger;
+            font-style: oblique;
+            font-weight: bold;
+        }
+    </style>
 </head>
-
 <body>
-<p id="demo"></p>
+    <h1>Connect-5 Chess Game</h1>
+    <canvas id="canvas" width="800" height="800" tabindex="1"></canvas>
+    
+    <script>
+        // ==========================================
+        // P5.js COMPATIBILITY LAYER 
+        // ==========================================
+        let canvas, ctx;
+        let width, height;
+        let mouseX = 0, mouseY = 0;
+        let mouseIsPressed = false;
+        let keyCode = 0;
+        let keyIsPressed = false;
+        let key = '';
+        const ENTER = 13;
+        const SHIFT = 16;
+        const CENTER = 'center'; // Fix 1: Defined CENTER constant
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/2.0.5/p5.min.js" integrity="sha512-jOTg6ikYiHx1LvbSOucnvZi4shXbaovZ91+rfViIiUFLgAJK+k1oQtGEaLvDB8rsZwEfUksTgmhrxdvEDykuzQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script>
-  function setup(){
-    createCanvas(2000,1600);
+        let isStroke = true; // Fix 2: Explicit stroke tracking flag
+
+        function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            width = canvas.width;
+            height = canvas.height;
+            
+
+            if (typeof setup === "function") setup();
+            
+            startLoop();
+        }
+
+        function createCanvas(w, h) {
+            canvas.width = w;
+            canvas.height = h;
+            width = w;
+            height = h;
+        }
+        function resizeCanvas(w, h) {
+            createCanvas(w, h);
+        }
+        function fill(r, g, b, a = 255) {
+            if (typeof r === "string") {
+                ctx.fillStyle = r;
+            } else if (g === undefined) { 
+                ctx.fillStyle = `rgb(${r},${r},${r})`;
+            } else if (b === undefined) {
+                ctx.fillStyle = `rgba(${r},${r},${r},${g/255})`;
+            } else {
+                ctx.fillStyle = `rgba(${r},${g},${b},${a/255})`;
+            }
+        }
+
+        function stroke(c) {
+            isStroke = true;
+            if (typeof c === "number") {
+                ctx.strokeStyle = `rgb(${c},${c},${c})`;
+            } else {
+                ctx.strokeStyle = c;
+            }
+        }
+
+        function noStroke() {
+            isStroke = false;
+            ctx.strokeStyle = "transparent";
+        }
+
+        function background(r, g, b) {
+            fill(r, g, b);
+            ctx.fillRect(0, 0, width, height);
+        }
+
+        function rect(x, y, w, h) {
+            ctx.fillRect(x, y, w, h);
+            if (isStroke) ctx.strokeRect(x, y, w, h);
+        }
+
+        function circle(x, y, d) {
+            ctx.beginPath();
+            ctx.arc(x, y, d / 2, 0, Math.PI * 2);
+            ctx.fill();
+            if (isStroke) ctx.stroke();
+        }
+
+        function textSize(size) {
+            ctx.font = `${size}px Arial`;
+        }
+
+        
+        function textAlign(align) {
+            // Fix 3: Safely handle numeric fallback positions (like width/2)
+            if (typeof align === "string") {
+                ctx.textAlign = align.toLowerCase();
+            } else {
+                ctx.textAlign = "center";
+            }
+        }
+
+        
+        function text(str, x, y) {
+            let lines = String(str).split('\n');
+            let fontHeight = parseInt(ctx.font, 10);
+            let lineHeight = isNaN(fontHeight) ? 16 : fontHeight * 1.2;
+            for (let i = 0; i < lines.length; i++) {
+                ctx.fillText(lines[i], x, y + (i * lineHeight));
+            }
+        }
+
+        
+        // ===== INPUT HANDLING =====
+        window.addEventListener("DOMContentLoaded", () => {
+            canvas = document.getElementById("canvas");
+    
+            canvas.addEventListener("mousemove", e => {
+                const rect = canvas.getBoundingClientRect();
+                mouseX = e.clientX - rect.left;
+                mouseY = e.clientY - rect.top;
+        });
+
+            canvas.addEventListener("mousedown", () => { 
+                mouseIsPressed = true; 
+            });
+    
+            canvas.addEventListener("mouseup", () => { 
+                mouseIsPressed = false; 
+                if (typeof mouseReleased === "function") mouseReleased(); // 触发你的鼠标松开函数
+            });
+    
+            window.addEventListener("keydown", e => { 
+                keyCode = e.keyCode; 
+                key = e.key;
+                keyIsPressed = true;
+                if (typeof keyPressed === "function") keyPressed(); // 触发你的按键按下函数
+            });
+    
+            window.addEventListener("keyup", () => { 
+                keyCode = 0; 
+                key = '';
+                keyIsPressed = false;
+                if (typeof keyReleased === "function") keyReleased(); // 触发你的按键松开函数
+            });
+        });
+
+        // ===== MAIN LOOP =====
+        function startLoop() {
+            function loop() {
+                if (typeof draw === "function") draw();
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        window.onload = init;
+
+//============================================MAIN GAME==========================================
+let startGame = false;
+let d = 15;
+ 
+let initIndex = 1;
+let keyOn = true;
+let mouseReady = true;
+
+let chessGround = [];
+let size = [0, 10, 60]; // INITAL, MAX SIZE, SIZE OF BOX
+let win = false;
+
+function createChessGround() {
+  chessGround = [];
+  for (let y = size[0]; y < size[1]; y++) {  
+    chessGround.push([]);
+    for (let x = size[0]; x < size[1]; x++) {
+      chessGround[y].push({
+        x: x,
+        y: y,
+        party: null,
+      });
+    }
+  }
+}
+
+let blockWidth;
+let preChess;
+let winner = "NO WINNER!!!";
+
+function setup() {
+  createCanvas(size[1] * size[2], size[1] * size[2]); 
+  blockWidth = size[2];
+  preChess = "white";
+}
+
+function drawChess(x, y, r, c) {
+  fill(c);
+  circle(x, y, r);
+}
+
+function search(x, y) {
+  let party = chessGround[y][x].party; 
+  if (!party) return;
+  
+  let directions = [
+    [1, 0],  // horzontal
+    [0, 1],  // vertical
+    [1, 1],  // slope line \
+    [1, -1]  // slope line /
+  ];
+
+  for (let i = 0; i < directions.length; i++) {
+    let dx = directions[i][0];
+    let dy = directions[i][1];
+    let count = 1; 
+
+    //forward searching
+    let tx = x + dx;
+    let ty = y + dy;
+    while (tx >= 0 && tx < size[1] && ty >= 0 && ty < size[1] && 
+           chessGround[ty][tx].party === party) {
+      count++;
+      tx += dx;
+      ty += dy;
+    }
+
+    //backward searching
+    tx = x - dx;
+    ty = y - dy;
+    while (tx >= 0 && tx < size[1] && ty >= 0 && ty < size[1] && 
+      chessGround[ty][tx].party === party) {
+        count++;
+        tx -= dx;
+        ty -= dy;
+    }
+    
+    //detection logic
+    if (count >= 5) {
+      console.log("Winner is: " + party);
+      win = true;
+      winner = party;
+      return;
+    }
+  }
+}
+
+function startTitle() {
+  background(190, 227, 219);
+  noStroke();
+  fill(85, 91, 110);
+  
+  rect(0, height / 4, width, height - height / 2);
+  fill(250, 249, 249);
+  textSize(20);
+  fill(255, 255, 255);
+  textAlign(width/2);
+  text("Start the game by pressing 'Enter'", width / 2, height / 3);
+  text("Select your inital setup:", width / 2, height / 2 - 50);
+  fill(255, 0, 0);
+  if (initIndex === 1) {
+    rect(width / 8 - 10, height / 2 + 40, 70, 70); 
+  } else if (initIndex === 2) {
+    rect(width / 2 - 10, height / 2 + 40, 70, 70);
+  }
+  fill(255, 255, 255);
+  text("Number of box:", width * 0.17, height * 0.55);
+  rect(width / 8, height / 2 + 50, 50, 50);
+  
+  text("Pixel of each box:", width * 0.55, height * 0.55);
+  rect(width / 2, height / 2 + 50, 50, 50);
+  
+  
+  fill(85, 91, 110);
+  text(size[1], width / 8 + 15, height / 2 + 85);
+  text(size[2], width / 2 + 15, height / 2 + 85);
+
+  
+
+  if (keyIsPressed && keyOn) {
+    if (keyCode === ENTER) {
+      createChessGround();
+      resizeCanvas(size[1] * size[2], size[1] * size[2]);
+      startGame = true;
+    } else if (keyCode === 32) {
+      initIndex++;
+      if (initIndex > 2) initIndex = 1;
+    } else if (keyCode === 38) {
+      size[initIndex]++;
+    } else if (keyCode === 40) {
+      size[initIndex]--;
+      
+      if (size[initIndex] < 1) size[initIndex] = 1;
+    } 
+    
+    keyOn = false;
+  }
+}
+
+function debug() {
+  fill(0, 0, 0);
+  noStroke();
+
+  let ratioX = (mouseX / width).toFixed(2);
+  let ratioY = (mouseY / height).toFixed(2);
+
+  text(`X:${mouseX} Y:${mouseY} (${ratioX}, ${ratioY})`, mouseX + 10, mouseY - 10);
+  circle(mouseX, mouseY, 4); 
+  rect(0, mouseY, width, 1);
+  rect(mouseX, 0, 1, height);
+
+  if (keyIsPressed && keyCode === SHIFT) {
+    win = true;
+    console.log("WIN");
+  }
+}
+
+function summary() {
+  background(190, 227, 219);
+  noStroke();
+  fill(85, 91, 110);
+  rect(width / 4, 0, width - width / 2, height);
+  fill(250, 249, 249);
+  textSize(28);
+  textAlign(CENTER);
+  text("WINNER IS...\n\n*** " + winner.toUpperCase() + "! ***", width / 2, 60);
+  textSize(15);
+  text("Press 'R' to Restart", width / 2, height - 50);
+}
+  
+function resetGame() {
+  startGame = false;
+  win = false;
+  winner = "NO WINNER!!!";
+  preChess = "white";
+
+  createChessGround();
+  resizeCanvas(size[1] * size[2], size[1] * size[2]);
+}
+
+function mainGame() {
+  blockWidth = size[2];
+  stroke(1);
+  
+  for (let y = 0; y < chessGround.length; y++) {
+    for (let x = 0; x < chessGround[y].length; x++) {
+      let cell = chessGround[y][x];
+      let px = cell.x * blockWidth; // pixel of x
+      let py = cell.y * blockWidth; // pixel of y
+      
+      // DRAW THE BACKGROUND
+      if ((x + y) % 2 == 0) {
+        fill(255);
+      } else {
+        fill(213, 176, 124);
+      }
+      rect(px, py, blockWidth, blockWidth);
+      
+      // if the mouse is inside of a box
+      if (mouseX > px && mouseX < px + blockWidth && mouseY > py && mouseY < py + blockWidth) {
+        fill(200, 200, 200, 150); // fill guild
+        rect(px + 10, py + 10, blockWidth - 20, blockWidth - 20); // show guild
+        
+        if (mouseIsPressed && mouseReady) { 
+          if (!cell.party) {
+            if (preChess === "black") {
+              cell.party = "white";
+              preChess = "white";
+            } else {
+              cell.party = "black";
+              preChess = "black";
+            }
+            console.log("Location:", cell.x, "-", cell.y, "; Party:", cell.party);
+            mouseReady = false;
+          }
+          search(cell.x, cell.y);
+        }
+      }
+
+      // DRAW THE CHESS
+      if (cell.party === "white") {
+        drawChess(px + blockWidth / 2, py + blockWidth / 2, size[2] - 15, 255);
+      } else if (cell.party === "black") {
+        drawChess(px + blockWidth / 2, py + blockWidth / 2, size[2] - 15, 0);
+      }
+    }
   }
 
-  function draw(){
-    background(0,0,0);
-    fill(255,255,255);
-    text(mouseX+" : "+mouseY, mouseX,mouseY);
-  }
-</script>
+  // SHOW GUILDANCE FOR NEXT CHESS
+  if (preChess == "white") { fill(0); } else { fill(255); }
+  circle(mouseX, mouseY, d);
+}
 
+function draw() {
+  background(220);
+
+  if (!startGame) {
+    startTitle();
+  } else if (win) {
+    moveGame = false;
+    summary();
+  } else {
+    mainGame();
+  }
+  debug(); 
+}
+
+function keyPressed() {
+  if (win && (key === 'r' || key === 'R')) {
+    resetGame();
+  }
+}
+function keyReleased() {
+  keyOn = true;
+}
+
+function mouseReleased() {
+  mouseReady = true;
+}
+    </script>
 </body>
 </html>
