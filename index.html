@@ -5,12 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        /*setup website details*/
         body {
-            background-color: black;
-            color: white;
-            text-align: center;
-            font-family: Arial, sans-serif;
+            background-color: black; /*the colour of background is black*/
+            color: white; /*colour as white*/
+            text-align: center;/*text of css will align in centre*/
+            font-family: Arial, sans-serif;/*font setup*/
         }
+        /*canva setup*/
         canvas {
             border: 1px solid white;
             display: block;
@@ -39,69 +41,97 @@
     
     <script>
         // ==========================================
-        // P5.js COMPATIBILITY LAYER 
+        // CODE COMPATIBILITY LAYER 
         // ==========================================
+        
+        //define variables 
         var canvas, ctx;
+        
         var width, height;
         var mouseX = 0, mouseY = 0;
+        
         var mouseIsPressed = false;
         var keyCode = 0;
         var keyIsPressed = false;
         var key = '';
+        
+        
         var ENTER = 13;
         var SHIFT = 16;
         var CENTER = 'center'; 
 
         var isStroke = true; 
-
+        
+        
+        /**
+         * Setup each functions and variables e.g canvas' setup
+         * @returns {void}
+         */
         function init() {
             canvas = document.getElementById('canvas');
             ctx = canvas.getContext('2d');
             width = canvas.width;
             height = canvas.height;
             
-            // 如果主游戏里写了 setup 函数，就调用它
             if (window.setup) { 
                 setup(); 
             }
             startLoop();
         }
-
-        function createCanvas(w, h) {
-            canvas.width = w;
-            canvas.height = h;
-            width = w;
-            height = h;
-        }
-
-        function resizeCanvas(w, h) {
-            createCanvas(w, h);
-        }
+        
+        
         /**
-         * 
-         * @param {type} r 
-         * @param {type} g
-         * @param {type} b
-         * @param {type} a
+         * Create canvas by width and height
+         * @param {int} w width of canva that will be assing to display
+         * @param {int} h height of canva that will be assing to display
          * @returns {undefined}
          */
+        function createCanvas(w, h) {
+            canvas.width = w;//define width of canva
+            canvas.height = h;//define height of canva
+            width = w;//repersent width to global var "width"
+            height = h;//repersent height to global var "height"
+        }
+        
+        /**
+         * resize, or recreate canvas based on height and width
+         * @param {type} w
+         * @param {type} h
+         * @returns {undefined}
+         */
+        function resizeCanvas(w, h) {
+            createCanvas(w, h);//create canvas by w,h agian
+        }
+        
+        /**
+         * To fill the shape or line drawn after this function as the RGB colour setted
+         * @param {int} r numbers of Red
+         * @param {int} g numbers of Green
+         * @param {int} b numbers of Blue
+         * @param {int} a numbers of transperent 
+         * @returns {void}
+         */
         function fill(r, g, b, a) {
-            // 最原始的默认值处理方式
-            if (a === undefined) { 
-                a = 255; 
+            if (a === undefined) { // If a, which is the clearness of the following colour is not filled;
+                a = 255; // Defult as highest, 255.
             }
             
-            if (typeof r === "string") {
-                ctx.fillStyle = r;
-            } else if (g === undefined) { 
-                ctx.fillStyle = "rgb(" + r + "," + r + "," + r + ")";
+            if (typeof r === "string") { //If the type of r, red is a string, then the filling;
+                ctx.fillStyle = r; 
+            } else if (g === undefined) {
+                ctx.fillStyle = "rgb(" + r + "," + r + "," + r + ")";// Would defult as a single state, white colour only.
             } else if (b === undefined) {
-                ctx.fillStyle = "rgba(" + r + "," + r + "," + r + "," + (g / 255) + ")";
+                ctx.fillStyle = "rgba(" + r + "," + r + "," + r + "," + (g / 255) + ")";// Would defult as a single state, white colour only.
             } else {
                 ctx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + (a / 255) + ")";
             }
         }
-
+        
+        /**
+         * Define the stroke on drawing after this code
+         * @param {type} c ,the stroke colour
+         * @returns {undefined}
+         */
         function stroke(c) {
             isStroke = true;
             if (typeof c === "number") {
@@ -165,7 +195,7 @@
             }
         }
 
-        // ===== 输入处理 (老派的 function 格式) =====
+        // ============== 输入处理 (老派的 function 格式) ==========
         
         window.addEventListener("DOMContentLoaded", function() {
             canvas = document.getElementById("canvas");
@@ -207,6 +237,11 @@
         });
 
         // ===== MAIN LOOP =====
+        
+        /**
+         * 
+         * @returns {undefined}
+         */
         function startLoop() {
             function loop() {
                 if (typeof draw === "function") draw();
@@ -217,7 +252,9 @@
 
         window.onload = init;
 
-//============================================MAIN GAME==========================================
+//============================================ MAIN GAME ===============from p5.js====================
+
+//init variables for data
 let startGame = false;
 let d = 15;
  
@@ -226,84 +263,114 @@ let keyOn = true;
 let mouseReady = true;
 
 let chessGround = [];
+
+// Pre define size of canvas
 let size = [0, 10, 60]; // INITAL, MAX SIZE, SIZE OF BOX
 let win = false;
+//init more variables for further functions
+let blockWidth;
+let preChess;
+let winner = "NO WINNER!!!";
 
+/**
+ * Create playground
+ * @returns {undefined}
+ */
 function createChessGround() {
-  chessGround = [];
-  for (let y = size[0]; y < size[1]; y++) {  
+  chessGround = [];//empety 2D array
+  for (let y = size[0]; y < size[1]; y++) {  //create y axis first by size data
     chessGround.push([]);
-    for (let x = size[0]; x < size[1]; x++) {
-      chessGround[y].push({
-        x: x,
-        y: y,
-        party: null,
+    for (let x = size[0]; x < size[1]; x++) { //then create x axis by size data
+      chessGround[y].push({//in every box, has its local position (to replace large x,y pixel values)
+        x: x,//the object "x" is equal to x of the pattern
+        y: y,//the object "y" is equal to y of the pattern
+        party: null//the object "party" is the repersentation of sides. e.g "white", means in this x,y has a chess of white side
       });
     }
   }
 }
 
-let blockWidth;
-let preChess;
-let winner = "NO WINNER!!!";
 
+/**
+ * Setup datas, that will run once for create canvas, etc.
+ * @returns {undefined}
+ */
 function setup() {
-  createCanvas(size[1] * size[2], size[1] * size[2]); 
-  blockWidth = size[2];
-  preChess = "white";
+  createCanvas(size[1] * size[2], size[1] * size[2]); //create canvas based on the size of two data 
+  blockWidth = size[2];//set block width as size data
+  preChess = "white";//first chess will be black (black first) since previous chess is assign as white
 }
-
+/**
+ * Draw the chess by x,y, radius and colour
+ * @param {type} x ,the pixel x position of chess
+ * @param {type} y ,the pixel y position of chess
+ * @param {type} r ,the radius of circle
+ * @param {type} c ,the colour of circle
+ * @returns {undefined}
+ */
 function drawChess(x, y, r, c) {
-  fill(c);
-  circle(x, y, r);
+  fill(c);//fill by colour c
+  circle(x, y, r);//draw the chess
 }
 
+/**
+ * the function that search if the chess is connected with other five same party chess.
+ * @param {type} x ,the local x position of chess
+ * @param {type} y ,the local y position of chess
+ * @returns {undefined}
+ */
 function search(x, y) {
-  let party = chessGround[y][x].party; 
-  if (!party) return;
+  let party = chessGround[y][x].party; //define current party by the party that's searching
+  if (!party) return;//if null(not filled) then end this search
   
-  let directions = [
+  let directions = [//define directions pattern by array
     [1, 0],  // horzontal
     [0, 1],  // vertical
     [1, 1],  // slope line \
     [1, -1]  // slope line /
   ];
 
+    //Search in each different pattern in array "directions"
   for (let i = 0; i < directions.length; i++) {
     let dx = directions[i][0];
     let dy = directions[i][1];
     let count = 1; 
 
     //forward searching
-    let tx = x + dx;
-    let ty = y + dy;
-    while (tx >= 0 && tx < size[1] && ty >= 0 && ty < size[1] && 
-           chessGround[ty][tx].party === party) {
-      count++;
-      tx += dx;
-      ty += dy;
+    let tx = x + dx; //define tx (tempory x) as input x plus dx, from the pattern in "directions"
+    let ty = y + dy; //define tx (tempory y) as input y plus dy, from the pattern in "directions"
+    
+    //while searching in forward, which is the increasing of local x,y 
+    while (tx >= 0 && tx < size[1] && ty >= 0 && ty < size[1] && chessGround[ty][tx].party === party) {//in the range, if the party searched (of local x,y) is the same coloured party 
+      count++;//then add count by 1
+      //to find the other connecting chess;
+      tx += dx;//increase tx by dx (which is 1 or 0)
+      ty += dy;//increase ty by dy (which is 1 or 0)
     }
 
     //backward searching
-    tx = x - dx;
-    ty = y - dy;
-    while (tx >= 0 && tx < size[1] && ty >= 0 && ty < size[1] && 
-      chessGround[ty][tx].party === party) {
-        count++;
-        tx -= dx;
-        ty -= dy;
+    tx = x - dx;//define tx (tempory x) as input x plus dx, from the pattern in "directions"
+    ty = y - dy;//define tx (tempory y) as input y plus dy, from the pattern in "directions"
+    while (tx >= 0 && tx < size[1] && ty >= 0 && ty < size[1] && chessGround[ty][tx].party === party) {
+        count++;//in the range, if the party searched (of local x,y) is the same coloured party 
+        //to find the other connecting chess;
+        tx -= dx;//decrease tx by dx (which is 1 or 0)
+        ty -= dy;//decrease ty by dy (which is 1 or 0)
     }
     
     //detection logic
-    if (count >= 5) {
-      console.log("Winner is: " + party);
-      win = true;
-      winner = party;
-      return;
+    if (count >= 5) {//if count is over 5
+      console.log("Winner is: " + party);//winner will become the party that is searched, or the party that connected
+      win = true;//other kind of return, but with variable instead
+      winner = party;//winner is the party that searched
+      return;//end the function
     }
   }
 }
-
+/**
+ * Draw and show the options that allowed to define for starting title
+ * @returns {undefined}
+ */
 function startTitle() {
   background(190, 227, 219);
   noStroke();
@@ -408,7 +475,7 @@ function mainGame() {
       let py = cell.y * blockWidth; // pixel of y
       
       // DRAW THE BACKGROUND
-      if ((x + y) % 2 == 0) {
+      if ((x + y) % 2 === 0) {
         fill(255);
       } else {
         fill(213, 176, 124);
@@ -446,7 +513,7 @@ function mainGame() {
   }
 
   // SHOW GUILDANCE FOR NEXT CHESS
-  if (preChess == "white") { fill(0); } else { fill(255); }
+  if (preChess === "white") { fill(0); } else { fill(255); }
   circle(mouseX, mouseY, d);
 }
 
@@ -456,7 +523,7 @@ function draw() {
   if (!startGame) {
     startTitle();
   } else if (win) {
-    moveGame = false;
+
     summary();
   } else {
     mainGame();
@@ -472,7 +539,6 @@ function keyPressed() {
 function keyReleased() {
   keyOn = true;
 }
-
 function mouseReleased() {
   mouseReady = true;
 }
