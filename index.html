@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Simple Chess Game</title>
+    <title>Simple Chess Game: Gomoku</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
@@ -40,6 +40,23 @@
     <canvas id="canvas" width="800" height="800" tabindex="1"></canvas>
     
     <script>
+        /*
+        Author: Kerr Zhang
+        Finished in: 2026-06-01
+        ICS3U, Peroid-4, CCVI
+        
+        A connect-five game， or called "Gomoku" User needs to connect five chess in a row, vertical, horzontal, or just a line to win the game.
+        
+        Press left-mouse to place down the chess, the colour of circle at mouse would tell which colour will be place next.
+        After one party got win, press key “R” to reset.
+
+        Other Info:
+        The game main code was programmed in P5.Js, then use self-made functions to achieve the same function as the code wants.
+        If player(s) wants to play more smoothly, I suggest using two mouse at same time (each player holding one mouse for control)
+        My skill is not as good yet for build server, host and online battle mode yet (Ｔ▽Ｔ)
+        Anyways, enjoy!
+        */
+        
         // ==========================================
         // CODE COMPATIBILITY LAYER 
         // ==========================================
@@ -188,14 +205,16 @@
         }
         
         /**
-         * @param
+         * Set the font size of text drawing after this function
+         * @param {int} size , the size of text in pixel
          */
         function textSize(size) {
             ctx.font = size + "px Arial";
         }
         
         /**
-         * @param
+         * Set the text alignment for canvas text drawing
+         * @param {string} align , text alignment style e.g. "center", "left"
          */
         function textAlign(align) {
             if (typeof align === "string") {
@@ -206,59 +225,70 @@
         }
         
         
-        
+        /**
+         * Draw string text onto the canvas, support multiple lines by '\n'
+         * @param {string} str , the text string going to display
+         * @param {int} x , the coordinate x of text position
+         * @param {int} y , the coordinate y of text position
+         */
         function text(str, x, y) {
             var textString = String(str);
-            var lines = textString.split('\n');
+            var lines = textString.split('\n'); // split text into lines
             
-            var fontHeight = parseInt(ctx.font, 10);
+            var fontHeight = parseInt(ctx.font, 10); // get current font size
             var lineHeight = 16; 
             
             if (isNaN(fontHeight) === false) {
-                lineHeight = fontHeight * 1.2;
+                lineHeight = fontHeight * 1.2; // set dynamic line height
             }
             for (var i = 0; i < lines.length; i++) {
-                ctx.fillText(lines[i], x, y + (i * lineHeight));
+                ctx.fillText(lines[i], x, y + (i * lineHeight)); // draw each lines one by one
             }
         }
 
         // ====================================================
-        
+        // EVENT LISTENERS FOR CONTROLS
+        // ====================================================
 
             canvas = document.getElementById("canvas");
     
+            //Track mouse position relative to canvas bounds
             canvas.addEventListener("mousemove", function(e) {
                 var rectInfo = canvas.getBoundingClientRect();
                 mouseX = e.clientX - rectInfo.left;
                 mouseY = e.clientY - rectInfo.top;
             });
 
+            //mouse down event
             canvas.addEventListener("mousedown", function() { 
                 mouseIsPressed = true; 
             });
     
+            //mouse up event and trigger mouseReleased callback
             canvas.addEventListener("mouseup", function() { 
-                mouseIsPressed = false; 
-                if (window.mouseReleased) { 
-                    mouseReleased(); 
+                mouseIsPressed = false; //set mouse pressed as false
+                if (window.mouseReleased) { //if mouse released
+                    mouseReleased(); //run function
                 }
             });
     
+            //keydown event and trigger keyPressed callback
             window.addEventListener("keydown", function(e) { 
-                keyCode = e.keyCode; 
-                key = e.key;
-                keyIsPressed = true;
-                if (window.keyPressed) { 
-                    keyPressed(); 
+                keyCode = e.keyCode; //translate "keyCode" as readable variable 
+                key = e.key;//translate "key" as readable variable
+                keyIsPressed = true;//set key is pressed as true
+                if (window.keyPressed) { //if key pressed
+                    keyPressed(); //run function
                 }
             });
     
+            //keyup event and trigger keyReleased callback
             window.addEventListener("keyup", function() { 
                 keyCode = 0; 
                 key = '';
                 keyIsPressed = false;
-                if (window.keyReleased) { 
-                    keyReleased(); 
+                if (window.keyReleased) { //If key released
+                    keyReleased(); //run function 
                 }
             });
 
@@ -266,13 +296,13 @@
         // ========================== MAIN LOOP ============================
         
         /**
-         * 
+         * Start the animation/game loop by using requestAnimationFrame
          * @returns {undefined}
          */
         function startLoop() {
             function loop() {
-                if (typeof draw === "function") draw();
-                requestAnimationFrame(loop);
+                if (typeof draw === "function") draw(); // run the draw function repeatedly
+                requestAnimationFrame(loop); // request next frame loop
             }
             loop();
         }
@@ -494,7 +524,7 @@ function summary() {
 }
 /**
  * Function that reset the game init and setup variables
-*/
+ */
 function resetGame() {
   startGame = false;//set start game as false
   win = false;//set win as false
