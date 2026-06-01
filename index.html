@@ -129,7 +129,7 @@
         
         /**
          * Define the stroke on drawing after this code
-         * @param {type} c ,the stroke colour
+         * @param {int} c ,the stroke colour
          * @returns {undefined}
          */
         function stroke(c) {
@@ -140,37 +140,63 @@
                 ctx.strokeStyle = c;
             }
         }
-
+        
+        /**
+         * Set no stroke for shapes
+         */
         function noStroke() {
             isStroke = false;
             ctx.strokeStyle = "transparent";
         }
-
+        
+        /**
+         * Draws the whole canvas as a rgb colour
+         * @param {int} r , red in rgb colour
+         * @param {int} g , green in rgb colour
+         * @param {int} b , blue in rgb colour
+         */
         function background(r, g, b) {
-            fill(r, g, b);
-            ctx.fillRect(0, 0, width, height);
+            fill(r, g, b);//fill following colour
+            ctx.fillRect(0, 0, width, height);//draw the background
         }
-
+        
+        /**
+         * @param {type} x the x start position of a rectangle
+         * @param {type} y the y start position of a rectangle
+         * @param {type} w the width of rectangle
+         * @param {type} h the height of rectangle
+         */
         function rect(x, y, w, h) {
-            ctx.fillRect(x, y, w, h);
-            if (isStroke === true) {
-                ctx.strokeRect(x, y, w, h);
+            ctx.fillRect(x, y, w, h);//draw rectangle
+            if (isStroke === true) {//if is stroke,
+                ctx.strokeRect(x, y, w, h);//draw rectangle without stroke
             }
         }
-
+        
+        /**
+         * @param {type} x the coordnate x of centre of circle
+         * @param {type} y the coordnate y of centre of circle
+         * @param {type} d the diameter of circle
+         */
         function circle(x, y, d) {
-            ctx.beginPath();
-            ctx.arc(x, y, d / 2, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.beginPath();//begin to draw
+            ctx.arc(x, y, d / 2, 0, Math.PI * 2);//draw a arc as x,y and d
+            ctx.fill();//fill the circle
             if (isStroke === true) {
-                ctx.stroke();
+                ctx.stroke();//if is stroke, draw circle with stroke
             }
         }
-
+        
+        /**
+         * @param
+         */
         function textSize(size) {
             ctx.font = size + "px Arial";
         }
-
+        
+        /**
+         * @param
+         */
         function textAlign(align) {
             if (typeof align === "string") {
                 ctx.textAlign = align.toLowerCase();
@@ -178,7 +204,9 @@
                 ctx.textAlign = "center";
             }
         }
-
+        
+        
+        
         function text(str, x, y) {
             var textString = String(str);
             var lines = textString.split('\n');
@@ -189,15 +217,14 @@
             if (isNaN(fontHeight) === false) {
                 lineHeight = fontHeight * 1.2;
             }
-            
             for (var i = 0; i < lines.length; i++) {
                 ctx.fillText(lines[i], x, y + (i * lineHeight));
             }
         }
 
-        // ============== 输入处理 (老派的 function 格式) ==========
+        // ====================================================
         
-        window.addEventListener("DOMContentLoaded", function() {
+
             canvas = document.getElementById("canvas");
     
             canvas.addEventListener("mousemove", function(e) {
@@ -234,9 +261,9 @@
                     keyReleased(); 
                 }
             });
-        });
 
-        // ===== MAIN LOOP =====
+
+        // ========================== MAIN LOOP ============================
         
         /**
          * 
@@ -369,13 +396,13 @@ function search(x, y) {
 }
 /**
  * Draw and show the options that allowed to define for starting title
- * @returns {undefined}
  */
 function startTitle() {
-  background(190, 227, 219);
-  noStroke();
-  fill(85, 91, 110);
+  background(190, 227, 219);//set background as rgb colour  
+  noStroke();//init as no stroke
+  fill(85, 91, 110);//fill rgb colour for shapes 
   
+  //draw the shapes and text
   rect(0, height / 4, width, height - height / 2);
   fill(250, 249, 249);
   textSize(20);
@@ -384,64 +411,75 @@ function startTitle() {
   text("Start the game by pressing 'Enter'", width / 2, height / 3);
   text("Select your inital setup by [up][down], and [space]:", width / 2, height / 2 - 50);
   fill(255, 0, 0);
-  if (initIndex === 1) {
-    rect(width / 8 - 10, height / 2 + 40, 70, 70); 
-  } else if (initIndex === 2) {
-    rect(width / 2 - 10, height / 2 + 40, 70, 70);
+  //initIndex, which is the setup menu index, to indcate the options that will change for game
+  if (initIndex === 1) {//if equals to 1, which is the number of boxes,
+    rect(width / 8 - 10, height / 2 + 40, 70, 70); //draw a red highlight around the option1 box
+  } else if (initIndex === 2) {//if equals to 2, which is the pixel of each boxes,
+    rect(width / 2 - 10, height / 2 + 40, 70, 70);//draw a red highlight around the option2 box
   }
-  fill(255, 255, 255);
+  fill(255, 255, 255);//colour following shape as rgb white
+  //draw the text and box for options
   text("Number of box:", width * 0.17, height * 0.55);
   rect(width / 8, height / 2 + 50, 50, 50);
   
   text("Pixel of each box:", width * 0.55, height * 0.55);
   rect(width / 2, height / 2 + 50, 50, 50);
   
-  
+  //show the number that is editing that will be input as setup of game
   fill(85, 91, 110);
   text(size[1], width / 8 + 15, height / 2 + 85);
   text(size[2], width / 2 + 15, height / 2 + 85);
 
   
-
-  if (keyIsPressed && keyOn) {
-    if (keyCode === ENTER) {
-      createChessGround();
-      resizeCanvas(size[1] * size[2], size[1] * size[2]);
-      startGame = true;
-    } else if (keyCode === 32) {
-      initIndex++;
-      if (initIndex > 2) initIndex = 1;
-    } else if (keyCode === 38) {
-      size[initIndex]++;
-    } else if (keyCode === 40) {
-      size[initIndex]--;
+//Option Box Logics
+  if (keyIsPressed && keyOn) {//if user pressed the key and key is released, to make sure accurate keyboard inputs
+    if (keyCode === ENTER) {//and if code is enter
+      createChessGround();//create the chessground
+      resizeCanvas(size[1] * size[2], size[1] * size[2]);//resize the canvas
+      startGame = true;//let the game be true
+    } else if (keyCode === 32) {//else if user pressed space
+      initIndex++;//increase the initIndex for switching the options in option box
       
-      if (size[initIndex] < 1) size[initIndex] = 1;
+      if (initIndex > 2) initIndex = 1;//if index is out of range, set it back to the first one
+    } else if (keyCode === 38) {//if key is up,
+      size[initIndex]++;//incease the index
+    } else if (keyCode === 40) {//else if key is down,
+      size[initIndex]--;//decreae the index
+      
+      if (size[initIndex] < 1) size[initIndex] = 1;//user cannot change the datas less than 1 incase of errors
     } 
     
-    keyOn = false;
+    keyOn = false;//make keyOn false
   }
 }
 
+/**
+ * Debug functions, not avalible in defult. To use it please delet the commenting "//" at the bottom of code
+ */
 function debug() {
   fill(0, 0, 0);
   noStroke();
-
+//setup the ratio of mouse on canvas
   let ratioX = (mouseX / width).toFixed(2);
   let ratioY = (mouseY / height).toFixed(2);
 
-  text(`X:${mouseX} Y:${mouseY} (${ratioX}, ${ratioY})`, mouseX + 10, mouseY - 10);
-  circle(mouseX, mouseY, 4); 
+  text(`X:${mouseX} Y:${mouseY} (${ratioX}, ${ratioY})`, mouseX + 10, mouseY - 10);//gives the ratio and pixel on canvas
+  circle(mouseX, mouseY, 4); //draw a solid circle for mouse position
+  //draw lines for position of mouse
   rect(0, mouseY, width, 1);
   rect(mouseX, 0, 1, height);
 
-  if (keyIsPressed && keyCode === SHIFT) {
-    win = true;
-    console.log("WIN");
+  if (keyIsPressed && keyCode === SHIFT) {//if shift is pressed, 
+    win = true;//make win true
+    console.log("Debug Function: WIN BY EXTERNAL FORCE");
   }
 }
 
+/**
+ * Function that shows the summary page of who wins
+ */
 function summary() {
+  //draws the background
   background(190, 227, 219);
   noStroke();
   fill(85, 91, 110);
@@ -449,98 +487,108 @@ function summary() {
   fill(250, 249, 249);
   textSize(28);
   textAlign(CENTER);
+  //tell who wins
   text("WINNER IS...\n\n*** " + winner.toUpperCase() + "! ***", width / 2, 60);
   textSize(15);
   text("Press 'R' to Restart", width / 2, height - 50);
 }
-  
+/**
+ * Function that reset the game init and setup variables
+*/
 function resetGame() {
-  startGame = false;
-  win = false;
-  winner = "NO WINNER!!!";
-  preChess = "white";
+  startGame = false;//set start game as false
+  win = false;//set win as false
+  winner = "NO WINNER!!!";//set winner as blank 
+  preChess = "white";//set prechess as white, which black will go first
 
-  createChessGround();
-  resizeCanvas(size[1] * size[2], size[1] * size[2]);
+  createChessGround();//create the chess ground 
+  resizeCanvas(size[1] * size[2], size[1] * size[2]);//and size them by size data
 }
-
+/**
+ * Main game, that will perform a chess ground, and allows user to click the boxes to place down chess, and store them inside a 2D array
+ */
 function mainGame() {
-  blockWidth = size[2];
-  stroke(1);
-  
-  for (let y = 0; y < chessGround.length; y++) {
-    for (let x = 0; x < chessGround[y].length; x++) {
-      let cell = chessGround[y][x];
+  blockWidth = size[2];//set block width as size data
+  stroke(1);//stroke for 1 px
+  //create the 2D array for chess ground
+  for (let y = 0; y < chessGround.length; y++) {//create y axis
+    for (let x = 0; x < chessGround[y].length; x++) {//create x axis
+      let cell = chessGround[y][x];//let the current position by y,x idk why I make this as y x instead x y when I code this part on april.
       let px = cell.x * blockWidth; // pixel of x
       let py = cell.y * blockWidth; // pixel of y
       
       // DRAW THE BACKGROUND
-      if ((x + y) % 2 === 0) {
-        fill(255);
+      if ((x + y) % 2 === 0) {//draw the boxes by a mix pattern. If it is odd;
+        fill(255);//fill white colour
       } else {
-        fill(213, 176, 124);
+        fill(213, 176, 124);//fill oak brown colour
       }
-      rect(px, py, blockWidth, blockWidth);
+      rect(px, py, blockWidth, blockWidth);//draw the rectangle
       
       // if the mouse is inside of a box
       if (mouseX > px && mouseX < px + blockWidth && mouseY > py && mouseY < py + blockWidth) {
         fill(200, 200, 200, 150); // fill guild
         rect(px + 10, py + 10, blockWidth - 20, blockWidth - 20); // show guild
         
-        if (mouseIsPressed && mouseReady) { 
-          if (!cell.party) {
-            if (preChess === "black") {
-              cell.party = "white";
-              preChess = "white";
+        if (mouseIsPressed && mouseReady) { //if mouse is pressed
+          if (!cell.party) {//and if that box has no chess init
+              //determin which chess will be drawn and set
+            if (preChess === "black") {//if it is black before
+              cell.party = "white";//define as white
+              preChess = "white";//set prechess as white now
             } else {
-              cell.party = "black";
-              preChess = "black";
+              cell.party = "black";//define as black
+              preChess = "black";//set prechess as black now
             }
-            console.log("Location:", cell.x, "-", cell.y, "; Party:", cell.party);
-            mouseReady = false;
+            console.log("Location:", cell.x, "-", cell.y, "; Party:", cell.party);//debug; locate the positon of chess begin changed
+            mouseReady = false;//mouse ready as false, incase of "long pressed" bug 
+            search(cell.x, cell.y);//search if the chess connects as pattern
           }
-          search(cell.x, cell.y);
+          
         }
       }
 
       // DRAW THE CHESS
-      if (cell.party === "white") {
-        drawChess(px + blockWidth / 2, py + blockWidth / 2, size[2] - 15, 255);
-      } else if (cell.party === "black") {
-        drawChess(px + blockWidth / 2, py + blockWidth / 2, size[2] - 15, 0);
+      if (cell.party === "white") {//if chess is white
+        //draw white chess in position of boxes
+        drawChess(px + blockWidth / 2, py + blockWidth / 2, size[2] * 3/4, 255);
+      } else if (cell.party === "black") {//if chess is black
+         //draw black chess in position of boxes
+        drawChess(px + blockWidth / 2, py + blockWidth / 2, size[2] * 3/4, 0);
       }
     }
   }
 
   // SHOW GUILDANCE FOR NEXT CHESS
-  if (preChess === "white") { fill(0); } else { fill(255); }
-  circle(mouseX, mouseY, d);
+  if (preChess === "white") {fill(0);} else {fill(255);}//if pre chess is white, when show the guide on mouse position that next chess will be next chess placed
+  circle(mouseX, mouseY, d);//draw the guide
 }
 
-function draw() {
-  background(220);
 
-  if (!startGame) {
-    startTitle();
-  } else if (win) {
+function draw() {//in the loop;
+  background(220);//background as defult grey
 
-    summary();
-  } else {
-    mainGame();
+  if (!startGame) {//if game is not started
+    startTitle();//show start title
+  } else if (win) {//if one party has won
+
+    summary();//show summary
+  } else {//else
+    mainGame();//run the main game
   }
-  //debug(); 
+  //debug(); //debug function, defult in-activiate
 }
 
-function keyPressed() {
-  if (win && (key === 'r' || key === 'R')) {
-    resetGame();
+function keyPressed() {//if key pressed 
+  if (win && (key === 'r' || key === 'R')) {// If it is showing summary, and key is "r"
+    resetGame();//reset game
   }
 }
-function keyReleased() {
-  keyOn = true;
+function keyReleased() {//if key is released
+  keyOn = true;//key is on
 }
-function mouseReleased() {
-  mouseReady = true;
+function mouseReleased() {//if mouse released
+  mouseReady = true;//mouse is ready for next click
 }
     </script>
 </body>
